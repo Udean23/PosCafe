@@ -90,15 +90,54 @@ const customerFlowData = {
   }
 };
 
-const CardStat = ({ icon, label, value }) => (
-  <div className="bg-white rounded-2xl p-4 shadow-sm w-full">
-    <div className="flex items-center space-x-4">
-      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-        {icon}
+const CircularProgress = ({ percentage, size = 70, strokeWidth = 6, color = "#FB923C" }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#E5E7EB"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          className="transition-all duration-300 ease-in-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-orange-500 text-lg font-bold">
+          {percentage < 30 ? '$' : percentage < 50 ? '🍽️' : percentage < 75 ? '👥' : '🧾'}
+        </div>
       </div>
-      <div>
-        <div className="text-sm text-gray-500">{label}</div>
+    </div>
+  );
+};
+
+const CardStat = ({ icon, label, value, percentage = 75 }) => (
+  <div className="bg-white rounded-2xl p-4 shadow-sm w-full">
+    <div className="flex items-center justify-between">
+      <div className="flex-1">
+        <div className="text-sm text-gray-500 mb-1">{label}</div>
         <div className="text-xl font-semibold text-gray-900">{value}</div>
+      </div>
+      <div className="ml-3">
+        <CircularProgress percentage={percentage} />
       </div>
     </div>
   </div>
@@ -144,7 +183,7 @@ const Dashboard = () => {
             />
           </div>
         </div>
-        <div className="flex flex-col">
+        <div className="grid grid-cols-2 gap-4 col-span-1 lg:col-span-2">
           <CardStat icon={<span className="text-orange-600">$</span>} label="Total Revenue" value="$425k" />
           <CardStat icon={<span className="text-orange-600">🍽️</span>} label="Total Menu" value="325" />
           <CardStat icon={<span className="text-orange-600">👥</span>} label="Total Customers" value="985" />
