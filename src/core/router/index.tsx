@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "@/views/layouts/MainLayout";
-import { Dashboard, Kasir,OrderList } from "@/views/pages/Pages";
+import { Dashboard, Kasir,OrderList,Shift } from "@/views/pages/Pages";
 
 export const router = createBrowserRouter([
   {
@@ -18,7 +18,11 @@ export const router = createBrowserRouter([
       {
         path: "order-list",
         element: <OrderList />,
-      }
+      },
+      {
+        path: "shift",
+        element: <Shift />,
+      },
     ],
   },
 ]);
