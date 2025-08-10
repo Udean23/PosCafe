@@ -182,13 +182,25 @@ const Shift = () => {
   const handleDragOver = (e, targetShiftId, targetDate) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+
+    const scrollContainer = e.currentTarget.closest('.overflow-x-auto.w-full');
+    if (scrollContainer) {
+      const rect = scrollContainer.getBoundingClientRect();
+      const offsetY = e.clientY - rect.top;
+      const scrollThreshold = 50;
+      const scrollSpeed = 10;
+
+      if (offsetY < scrollThreshold) {
+        scrollContainer.scrollTop = Math.max(scrollContainer.scrollTop - scrollSpeed, 0);
+      } else if (offsetY > rect.height - scrollThreshold) {
+        scrollContainer.scrollTop = Math.min(scrollContainer.scrollTop + scrollSpeed, scrollContainer.scrollHeight);
+      }
+    }
     
-    // Only allow drop if it's the same date but different shift
     if (draggedEmployee && 
         draggedEmployee.sourceDate === targetDate && 
         draggedEmployee.sourceShiftId !== targetShiftId) {
       
-      // Check if employee with same name already exists in target shift
       const targetEmployees = scheduleData[targetShiftId]?.[targetDate]?.employees || [];
       const employeeAlreadyExists = targetEmployees.some(emp => emp.name === draggedEmployee.employee.name);
       
@@ -199,7 +211,6 @@ const Shift = () => {
   };
 
   const handleDragLeave = (e) => {
-    // Only clear drag over info if we're actually leaving the drop zone
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setDragOverInfo(null);
     }
@@ -213,13 +224,11 @@ const Shift = () => {
 
     const { employee, sourceShiftId, sourceDate } = draggedEmployee;
 
-    // Only allow drop if it's the same date but different shift
     if (sourceDate !== targetDate || sourceShiftId === targetShiftId) {
       setDraggedEmployee(null);
       return;
     }
 
-    // Check if employee with same name already exists in target shift on same date
     const targetEmployees = scheduleData[targetShiftId]?.[targetDate]?.employees || [];
     const employeeAlreadyExists = targetEmployees.some(emp => emp.name === employee.name);
 
@@ -232,13 +241,11 @@ const Shift = () => {
     setScheduleData(prev => {
       const newData = { ...prev };
 
-      // Remove from source
       if (newData[sourceShiftId]?.[sourceDate]?.employees) {
         newData[sourceShiftId][sourceDate].employees = 
           newData[sourceShiftId][sourceDate].employees.filter(emp => emp.id !== employee.id);
       }
 
-      // Add to target
       if (!newData[targetShiftId]) {
         newData[targetShiftId] = {};
       }
@@ -253,7 +260,9 @@ const Shift = () => {
         newData[targetShiftId][targetDate].employees = [];
       }
 
-      newData[targetShiftId][targetDate].employees.push(employee);
+      if (!newData[targetShiftId][targetDate].employees.some(emp => emp.id === employee.id)) {
+        newData[targetShiftId][targetDate].employees.push(employee);
+      }
 
       return newData;
     });
